@@ -1,0 +1,48 @@
+[tools]
+rust = "stable"
+"cargo:adrs" = "0.10.0"
+"npm:backlog.md" = "1.50.1"
+
+[tasks.adr-list]
+description = "List architecture decision records"
+run = "adrs list"
+
+[tasks.adr-new]
+description = "Create a new architecture decision record"
+run = "adrs new"
+
+[tasks.adr-doctor]
+description = "Check architecture decision record health"
+run = "adrs doctor"
+
+[tasks.backlog]
+description = "Open the Backlog.md task board"
+run = "backlog board"
+
+[tasks.backlog-browser]
+description = "Open the Backlog.md web board"
+run = "backlog browser"
+
+[tasks.backlog-check]
+description = "Validate and list open Backlog.md tasks"
+run = "backlog task list --status 'To Do' --plain"
+
+[tasks.fmt]
+description = "Format Rust sources"
+run = "cargo fmt --all"
+
+[tasks.lint]
+description = "Run Rust lints"
+run = "cargo clippy --all-targets --all-features -- -D warnings"
+
+[tasks.test]
+description = "Run tests"
+run = "cargo test --all-features"
+
+[tasks.check]
+description = "Run the default local verification suite"
+depends = ["fmt", "lint", "test"]
+
+[tasks.build]
+description = "Build the application"
+run = "cargo build"
