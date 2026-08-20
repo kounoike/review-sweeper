@@ -1,0 +1,16 @@
+project_name: "Review Sweeper"
+default_status: "To Do"
+statuses: ["To Do", "In Progress", "Done"]
+labels: ["project-setup", "mvp", "preparation", "ai-review", "worktree", "external-tools", "later"]
+definition_of_done: ["テストと該当するチェックが通る", "文書が更新されている", "リグレッションがない"]
+date_format: yyyy-mm-dd hh:mm
+max_column_width: 80
+auto_open_browser: true
+default_port: 6420
+remote_operations: false
+auto_commit: false
+filesystem_only: false
+bypass_git_hooks: false
+check_active_branches: true
+active_branch_days: 30
+task_prefix: "task"
