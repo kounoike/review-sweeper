@@ -1,16 +1,18 @@
 ---
-id: TASK-4
+id: TASK-2
 title: GitHub APIと認証・トークン保管を調査する
 status: To Do
 assignee: []
 created_date: '2026-08-20 18:06'
-updated_date: '2026-08-20 18:07'
+updated_date: '2026-08-23 00:49'
 labels:
   - project-setup
 milestone: m-0
-dependencies:
-  - TASK-1
+dependencies: []
+documentation:
+  - backlog/docs/product/doc-3 - Scope-and-Roadmap.md
 type: spike
+ordinal: 2
 ---
 
 ## Description

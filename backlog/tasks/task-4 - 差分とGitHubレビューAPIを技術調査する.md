@@ -1,17 +1,20 @@
 ---
-id: TASK-6
+id: TASK-4
 title: 差分とGitHubレビューAPIを技術調査する
 status: To Do
 assignee: []
 created_date: '2026-08-20 18:06'
-updated_date: '2026-08-20 18:07'
+updated_date: '2026-08-23 00:49'
 labels:
   - project-setup
 milestone: m-0
 dependencies:
   - TASK-2
-  - TASK-4
+references:
+  - adrs/0006-GitHub差分とローカル差分を別のソースとして扱う.md
+  - adrs/0007-構造化された差分モデルを使う.md
 type: spike
+ordinal: 4
 ---
 
 ## Description

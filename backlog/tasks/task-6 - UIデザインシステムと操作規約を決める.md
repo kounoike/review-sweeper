@@ -1,16 +1,19 @@
 ---
-id: TASK-5
+id: TASK-6
 title: UIデザインシステムと操作規約を決める
 status: To Do
 assignee: []
 created_date: '2026-08-20 18:06'
-updated_date: '2026-08-20 18:07'
+updated_date: '2026-08-23 00:49'
 labels:
   - project-setup
 milestone: m-0
 dependencies:
-  - TASK-3
+  - TASK-1
+documentation:
+  - backlog/docs/product/doc-3 - Scope-and-Roadmap.md
 type: spike
+ordinal: 6
 ---
 
 ## Description

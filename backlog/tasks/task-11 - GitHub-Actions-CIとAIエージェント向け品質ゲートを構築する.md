@@ -1,17 +1,21 @@
 ---
-id: TASK-10
+id: TASK-11
 title: GitHub Actions CIとAIエージェント向け品質ゲートを構築する
 status: To Do
 assignee: []
 created_date: '2026-08-20 18:13'
-updated_date: '2026-08-20 18:16'
+updated_date: '2026-08-23 00:53'
 labels:
   - project-setup
 milestone: m-0
 dependencies:
-  - TASK-8
-  - TASK-9
+  - TASK-10
+references:
+  - adrs/0001-Rustネイティブアプリケーションを採用する.md
+documentation:
+  - backlog/docs/product/doc-3 - Scope-and-Roadmap.md
 type: chore
+ordinal: 11
 ---
 
 ## Description
