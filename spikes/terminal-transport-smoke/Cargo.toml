@@ -1,0 +1,8 @@
+[package]
+name = "review-sweeper-terminal-transport-smoke"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[target.'cfg(windows)'.dependencies]
+conpty = "=0.7.0"

@@ -1,0 +1,3 @@
+FONT ui_path="\\\\wsl.localhost\\Ubuntu-24.04\\tmp\\task1-jp-assets\\NotoSansCJKjp-UI-subset.otf" ui_bytes=65056 mono_path="\\\\wsl.localhost\\Ubuntu-24.04\\tmp\\task1-jp-assets\\NotoSansMonoCJKjp-subset.otf" mono_bytes=62248
+METRIC first_ui_ms=0
+EVENT visible=0..4

@@ -1,0 +1,13 @@
+EVENT visible=0..16
+EVENT pointer=click selected=1
+EVENT keyboard=down selected=2
+EVENT visible=2..19
+EVENT visible=4..20
+EVENT visible=5..21
+EVENT visible=6..22
+EVENT visible=6..23
+EVENT visible=7..23
+EVENT visible=7..24
+EVENT background=start
+EVENT background=finish generation=1
+EVENT text="日本語テストabc"

@@ -6,6 +6,8 @@ Date: 2026-08-20
 
 Accepted
 
+Relates to [10. WindowsネイティブUIフレームワークにGPUIを採用する](0010-windows-ui-gpui.md)
+
 ## Context
 
 Review Sweeperの最終的な対応OSはWindows、macOS、Linuxとする。初期ターゲットはWindowsであり、GUIはWindowsネイティブアプリケーションとして提供する。

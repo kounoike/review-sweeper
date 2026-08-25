@@ -1,0 +1,10 @@
+FONT_ENUM backend=DirectWrite count=261 candidates=["BIZ UDPゴシック", "BIZ UDP明朝", "BIZ UDゴシック", "BIZ UD明朝", "Cascadia Code", "Cascadia Mono", "Century Gothic", "Consolas", "Copperplate Gothic", "Franklin Gothic", "Franklin Gothic Book", "MS UI Gothic", "Malgun Gothic", "Meiryo UI", "Showcard Gothic", "Yu Gothic UI"]
+FONT_VALIDATE preset=0 ui="Yu Gothic UI":true diff="Cascadia Mono":true terminal="Consolas":true
+FONT_VALIDATE preset=1 ui="Meiryo UI":true diff="Consolas":true terminal="Cascadia Mono":true
+EVENT visible=0..1
+EVENT visible=0..4
+EVENT visible=0..1
+EVENT visible=0..4
+FONT_SWITCH preset=1 ui="Meiryo UI" ui_valid=true diff="Consolas" diff_valid=true terminal="Cascadia Mono" terminal_valid=true
+EVENT visible=0..1
+EVENT visible=0..4
