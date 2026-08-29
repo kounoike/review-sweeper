@@ -1,0 +1,15 @@
+[package]
+name = "execution-backend-spike"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+process-wrap = { version = "10.0.0", default-features = false, features = ["std", "job-object", "process-group"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "deny"
+pedantic = "deny"
