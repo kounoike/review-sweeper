@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review Sweeper UI Guidelines Prototype</title>
+  <style>
+    :root { color-scheme: light; --canvas:#f4f6f8; --panel:#fff; --raised:#fff; --text:#1b2430; --muted:#5e6b7a; --border:#d7dde5; --focus:#0969da; --accent:#0969da; --add:#dafbe1; --del:#ffebe9; --success:#1a7f37; --warn:#9a6700; --danger:#cf222e; --info:#0969da; --shadow:0 8px 24px #1822302e; }
+    html[data-theme="dark"] { color-scheme: dark; --canvas:#111418; --panel:#181d23; --raised:#20262e; --text:#edf2f7; --muted:#aab4c0; --border:#343c46; --focus:#58a6ff; --accent:#58a6ff; --add:#193b2a; --del:#462329; --success:#3fb950; --warn:#d29922; --danger:#f85149; --info:#58a6ff; --shadow:0 8px 24px #0008; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; height:100vh; overflow:hidden; background:var(--canvas); color:var(--text); font:14px/1.45 "Segoe UI",system-ui,sans-serif; }
+    button,select { font:inherit; color:inherit; }
+    button,select { border:1px solid var(--border); border-radius:6px; background:var(--panel); padding:6px 10px; }
+    button:hover { border-color:var(--accent); }
+    :focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+    .topbar { height:52px; display:flex; gap:12px; align-items:center; padding:8px 14px; border-bottom:1px solid var(--border); background:var(--panel); }
+    .brand { font-weight:700; white-space:nowrap; }
+    .grow { flex:1; }
+    .control-label { display:flex; gap:6px; align-items:center; color:var(--muted); }
+    .screen { height:calc(100vh - 52px); }
+    .hidden { display:none!important; }
+    .workbench { display:grid; grid-template-columns:240px minmax(480px,1fr) 320px; }
+    .pane { min-width:0; overflow:auto; background:var(--panel); }
+    .left { border-right:1px solid var(--border); }
+    .right { border-left:1px solid var(--border); }
+    .pane-header { position:sticky; top:0; z-index:2; min-height:46px; display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--border); background:var(--panel); font-weight:650; }
+    .file { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:0; padding:8px 12px; text-align:left; background:transparent; }
+    .file[aria-current="true"] { background:color-mix(in srgb,var(--accent) 14%,transparent); box-shadow:inset 3px 0 var(--accent); }
+    .file small { margin-left:auto; color:var(--muted); }
+    .center-toolbar { display:flex; gap:6px; flex-wrap:wrap; }
+    .code { font:13px/20px "Cascadia Mono",Consolas,monospace; padding:10px 0 40px; min-width:660px; }
+    .line { display:grid; grid-template-columns:42px 42px 22px 1fr; white-space:pre; padding:0 12px 0 0; }
+    .line.add { background:var(--add); } .line.del { background:var(--del); }
+    .ln { color:var(--muted); text-align:right; padding-right:9px; user-select:none; }
+    .mark { text-align:center; font-weight:700; }
+    .tabs { display:flex; width:100%; border-bottom:1px solid var(--border); }
+    .tab { flex:1; border:0; border-radius:0; padding:10px 4px; color:var(--muted); background:var(--panel); }
+    .tab[aria-selected="true"] { color:var(--text); box-shadow:inset 0 -3px var(--accent); }
+    .panel-content { padding:12px; }
+    .card { margin-bottom:10px; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--panel); }
+    .badge { display:inline-flex; gap:5px; align-items:center; padding:2px 8px; border:1px solid currentColor; border-radius:999px; font-size:12px; font-weight:600; }
+    .badge.filled { color:var(--panel); background:var(--info); border-color:var(--info); }
+    .badge.success { color:var(--success); } .badge.warn { color:var(--warn); border-style:dashed; } .badge.danger { color:var(--danger); border-width:2px; }
+    .local { border-left:4px solid var(--warn); border-radius:4px; padding:5px 8px; background:color-mix(in srgb,var(--warn) 10%,transparent); }
+    .muted { color:var(--muted); }
+    .error { border:2px solid var(--danger); }
+    .skeleton { height:12px; margin:8px 0; border-radius:4px; background:color-mix(in srgb,var(--muted) 18%,transparent); }
+    .inbox { overflow:auto; padding:20px; }
+    .inbox h1 { margin:0 0 16px; font-size:20px; }
+    .pr-row { display:grid; grid-template-columns:minmax(280px,1fr) auto auto; gap:16px; align-items:center; margin-bottom:8px; padding:14px; border:1px solid var(--border); border-radius:10px; background:var(--panel); }
+    .source-banner { margin:10px 12px 0; padding:8px 10px; border-left:4px solid var(--warn); background:color-mix(in srgb,var(--warn) 10%,transparent); }
+    .palette-backdrop { position:fixed; inset:0; z-index:10; display:grid; place-items:start center; padding-top:12vh; background:#0007; }
+    .palette { width:min(560px,calc(100vw - 32px)); overflow:hidden; border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); background:var(--raised); }
+    .palette input { width:100%; border:0; border-bottom:1px solid var(--border); padding:14px; background:transparent; color:var(--text); font:inherit; }
+    .command { display:flex; width:100%; border:0; border-radius:0; padding:10px 14px; background:transparent; text-align:left; }
+    .command kbd { margin-left:auto; color:var(--muted); }
+    .mobile-toggle { display:none; }
+    body.compact .workbench { grid-template-columns:1fr; position:relative; }
+    body.compact .left, body.compact .right { position:absolute; inset:0 auto 0 0; z-index:5; width:min(340px,90vw); box-shadow:var(--shadow); }
+    body.compact .right { inset:0 0 0 auto; }
+    body.compact .mobile-toggle { display:inline-block; }
+    body.compact:not(.show-left) .left, body.compact:not(.show-right) .right { display:none; }
+    @media (max-width:960px) { .workbench { grid-template-columns:1fr; position:relative; } .left,.right { position:absolute; z-index:5; width:min(340px,90vw); height:100%; box-shadow:var(--shadow); } .left{left:0}.right{right:0} body:not(.show-left) .left,body:not(.show-right) .right{display:none}.mobile-toggle{display:inline-block}.control-label span{display:none} }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Review Sweeper</span>
+    <button class="mobile-toggle" id="filesButton" aria-controls="filesPane">☰ Files</button>
+    <button class="mobile-toggle" id="detailsButton" aria-controls="detailsPane">◫ Details</button>
+    <span class="grow"></span>
+    <label class="control-label"><span>Screen</span><select id="screenSelect"><option value="workbench">Workbench</option><option value="inbox">Review Inbox</option><option value="source">Full Source</option></select></label>
+    <label class="control-label"><span>State</span><select id="stateSelect"><option value="ready">Ready</option><option value="loading">Loading</option><option value="error">Checks error</option></select></label>
+    <label class="control-label"><span>Width</span><select id="widthSelect"><option value="wide">Wide</option><option value="compact">Compact</option></select></label>
+    <button id="themeButton" aria-label="theme を切り替える">◐ Theme</button>
+    <button id="paletteButton">⌨ Commands</button>
+  </header>
+
+  <main id="workbench" class="screen workbench">
+    <nav class="pane left" id="filesPane" aria-label="File navigation">
+      <div class="pane-header">Files <span class="grow"></span><span class="badge success">✓ 2/4</span></div>
+      <button class="file" aria-current="true">▾ src/review.rs <small>+42 −8</small></button>
+      <button class="file">○ src/state.rs <small>+18 −2</small></button>
+      <button class="file">✓ tests/review.rs <small>+51</small></button>
+      <button class="file">○ README.md <small>+4 −1</small></button>
+      <div class="panel-content"><div class="local">✎ <strong>Local modified</strong><br><span class="muted">2 files · PR diff とは別</span></div></div>
+    </nav>
+    <section class="pane center" aria-label="Diff or Full Source">
+      <div class="pane-header center-toolbar"><strong id="surfaceTitle">Diff · src/review.rs</strong><span class="grow"></span><button id="diffButton">Diff</button><button id="sourceButton">Source</button><button>✓ Reviewed</button></div>
+      <div id="sourceBanner" class="source-banner hidden">✎ <strong>Local source</strong> — PR HEAD ではありません。差分レビュー対象には含まれません。</div>
+      <div class="code" tabindex="0" aria-label="code viewer">
+        <div class="line"><span class="ln">18</span><span class="ln">18</span><span class="mark"> </span><span> pub fn summarize(review: &amp;Review) -&gt; Summary {</span></div>
+        <div class="line del"><span class="ln">19</span><span class="ln"></span><span class="mark">−</span><span>     let checks = review.checks.unwrap();</span></div>
+        <div class="line add"><span class="ln"></span><span class="ln">19</span><span class="mark">+</span><span>     let checks = review.checks.as_deref().unwrap_or_default();</span></div>
+        <div class="line add"><span class="ln"></span><span class="ln">20</span><span class="mark">+</span><span>     let partial = review.checks.is_none();</span></div>
+        <div class="line"><span class="ln">20</span><span class="ln">21</span><span class="mark"> </span><span>     Summary { checks, partial }</span></div>
+        <div class="line"><span class="ln">21</span><span class="ln">22</span><span class="mark"> </span><span> }</span></div>
+      </div>
+    </section>
+    <aside class="pane right" id="detailsPane" aria-label="Review details">
+      <div class="tabs" role="tablist"><button class="tab" role="tab" data-tab="checks" aria-selected="true">Checks 1</button><button class="tab" role="tab" data-tab="findings" aria-selected="false">AI 2</button><button class="tab" role="tab" data-tab="draft" aria-selected="false">Draft 1</button></div>
+      <div id="panelContent" class="panel-content"></div>
+    </aside>
+  </main>
+
+  <main id="inbox" class="screen inbox hidden">
+    <h1>Review Inbox</h1>
+    <article class="pr-row" tabindex="0"><div><strong>review-sweeper · #142</strong><br>Keep remote and local state separate<br><span class="muted">mika · updated 12 min ago</span></div><span class="badge filled">◉ Needs review</span><div><span class="badge success">✓ Checks passed</span><br><span class="local">✎ Local modified · 2</span></div></article>
+    <article class="pr-row" tabindex="0"><div><strong>review-sweeper · #139</strong><br>Virtualize large diffs<br><span class="muted">sora · updated yesterday</span></div><span class="badge warn">↻ Updated since review</span><div><span class="badge danger">× Checks failed</span><br><span class="badge success">✓ Local clean</span></div></article>
+  </main>
+
+  <div id="palette" class="palette-backdrop hidden" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette"><input id="commandInput" placeholder="Command を検索…"><button class="command">次の file <kbd>Alt+↓</kbd></button><button class="command">Diff / Full Source を切り替える <kbd>Ctrl+Enter</kbd></button><button class="command">Side panel を切り替える <kbd>Ctrl+J</kbd></button></div>
+  </div>
+
+  <script>
+    const root=document.documentElement, body=document.body, panel=document.querySelector('#panelContent');
+    let activeTab='checks', currentState='ready';
+    const templates={
+      checks:{ready:'<div class="card"><span class="badge danger">× Failed</span><h3>cargo test</h3><p>1 test failed in review_state.</p><button>Open details</button></div><div class="card"><span class="badge success">✓ Passed</span> lint</div>',loading:'<p role="status">◷ Loading checks…</p><div class="skeleton"></div><div class="skeleton"></div>',error:'<div class="card error" role="alert"><span class="badge danger">× Failed</span><h3>Checks を取得できません</h3><p>Diff と draft は引き続き利用できます。</p><button>Retry</button> <button>Copy details</button></div>'},
+      findings:{ready:'<div class="card" style="border-left:4px solid var(--warn)"><span class="badge warn">✦ AI finding</span><h3>Missing fallback</h3><p>Checks が未取得の場合に panic する可能性があります。</p><button>Add to draft</button> <button>Dismiss</button></div>',loading:'<p role="status">◷ Loading AI findings…</p><div class="skeleton"></div>',error:'<div class="card"><span class="badge warn">◌ Partial</span><p>AI findings は古い結果です。</p><button>Refresh</button></div>'},
+      draft:{ready:'<div class="card" style="border-left:4px solid var(--info)"><span class="badge">✎ Draft</span><p>Please handle missing checks without panicking.</p><button>Edit</button></div><button>Review and submit…</button>',loading:'<p role="status">◷ Loading draft…</p><div class="skeleton"></div>',error:'<div class="card error"><span class="badge danger">× Autosave failed</span><p>入力内容はこの画面に保持されています。</p><button>Retry save</button></div>'}
+    };
+    function renderPanel(){panel.innerHTML=templates[activeTab][currentState];}
+    function showScreen(name){document.querySelectorAll('.screen').forEach(x=>x.classList.add('hidden')); const target=name==='source'?'workbench':name; document.querySelector('#'+target).classList.remove('hidden'); setSource(name==='source');}
+    function setSource(on){document.querySelector('#surfaceTitle').textContent=(on?'Full Source':'Diff')+' · src/review.rs';document.querySelector('#sourceBanner').classList.toggle('hidden',!on);}
+    document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{activeTab=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));renderPanel();});
+    document.querySelector('#themeButton').onclick=()=>root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';
+    document.querySelector('#stateSelect').onchange=e=>{currentState=e.target.value;renderPanel();};
+    document.querySelector('#widthSelect').onchange=e=>body.classList.toggle('compact',e.target.value==='compact');
+    document.querySelector('#screenSelect').onchange=e=>showScreen(e.target.value);
+    document.querySelector('#diffButton').onclick=()=>setSource(false); document.querySelector('#sourceButton').onclick=()=>setSource(true);
+    document.querySelector('#filesButton').onclick=()=>body.classList.toggle('show-left'); document.querySelector('#detailsButton').onclick=()=>body.classList.toggle('show-right');
+    const palette=document.querySelector('#palette'),input=document.querySelector('#commandInput');
+    function openPalette(){palette.classList.remove('hidden');input.focus();} function closePalette(){palette.classList.add('hidden');document.querySelector('#paletteButton').focus();}
+    document.querySelector('#paletteButton').onclick=openPalette; palette.onclick=e=>{if(e.target===palette)closePalette();};
+    document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='p'){e.preventDefault();openPalette();}if(e.key==='Escape'&&!palette.classList.contains('hidden'))closePalette();if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();setSource(document.querySelector('#surfaceTitle').textContent.startsWith('Diff'));}});
+    renderPanel();
+  </script>
+</body>
+</html>
