@@ -44,6 +44,14 @@ Backlog CLIは`mise.toml`で管理しているため、直接`backlog`を実行�
 - PRの承認前にマージしない。修正要求がある場合は同じタスクのスコープで対応し、再検証してから再度レビューを依頼する。
 - マージ後にPRの変更が対象branchへ到達していることと、CI等の必要な検証結果を確認してから完了を報告する。
 
+### PR作成の自動化
+
+- タスク担当者は、受け入れ条件、検証、Backlogのfinalization、commitまで完了したら、ユーザーから別途pushやPR作成の指示を待たずにPR作成へ進む。
+- Orca orchestrationでworkerが作業した場合、workerはcommitと検証結果を`worker_done`で報告し、coordinatorが対象branchのclean状態とcommitを確認して、最新の対象branchへの追従、再検証、push、PR作成を自動的に行う。workerとcoordinatorが重複してPRを作成しない。
+- PRには対応するTASK ID、変更概要、受け入れ条件に対する検証結果、既知の制約と後続事項を記載する。PR作成後はOrca workspaceを`in-review`へ更新し、PR番号とURLをcommentへ記録する。
+- 対象branchへの追従でconflictが発生した場合、検証が失敗した場合、pushまたはPR作成権限がない場合は、force pushや検証省略で回避せず、実行したcommandとblockerを報告する。
+- PRの自動作成はマージの自動承認を意味しない。PRはユーザーまたは指定reviewerの承認を待ち、承認前にマージしない。
+
 ### Orcaワークスペースの後始末
 
 - Orcaワークスペースで進めたタスクは、承認されたPRが対象branchへマージされ、上記のタスク完了条件を満たした後、そのワークスペースを削除する。
