@@ -3,7 +3,7 @@ id: doc-7
 title: Windows初期ターゲットのビルド方式
 type: specification
 created_date: '2026-08-29 03:16'
-updated_date: '2026-08-29 03:37'
+updated_date: '2026-08-29 03:44'
 ---
 # Windows初期ターゲットのビルド方式
 
@@ -22,7 +22,7 @@ updated_date: '2026-08-29 03:37'
 | C/C++ toolchain | Visual Studio 2022 Build ToolsのMSVC、Windows SDK | GPUIおよびnative dependencyのcompile/link、Windows resource、system import libraryを供給する |
 | UI framework | GPUIのADRで承認されたversionをCargo manifest/lockfileでpin | 公開版とmainの能力差をbuildへ混入させない |
 
-ARM64の`aarch64-pc-windows-msvc`もRustのTier 1 with host toolsだが、初期対象には含めない。ARM64利用者需要、Windows ARM64 runnerの安定提供、GPUI・native dependencyのcompile/link、実機GPU/IME/accessibility、installerのmulti-architecture設計が揃った時点で追加を再検討する。`i686-pc-windows-msvc`は新規需要が示されない限り対象外とする。
+ARM64の`aarch64-pc-windows-msvc`もRustのTier 1 with host toolsだが、初期対象には含めない。ARM64利用者需要、Windows ARM64 runnerの安定提供、GPUIのARM64実機検証が揃った時点で追加を再検討する。native dependencyのcompile/link、GPU/IME/accessibility、package architectureもその実機検証で確認する。`i686-pc-windows-msvc`は新規需要が示されない限り対象外とする。
 
 ## 開発・CI・配布build経路の比較
 
@@ -68,16 +68,18 @@ mise run windows-build-release
 
 release候補のprovenanceにはcommit、dirty flag、`rustc -Vv`、`cargo -V`、`mise --version`、runner image、MSVC/Windows SDK、GPUI/Cargo.lock hash、artifact SHA-256を残す。現在の`rust = "stable"`は毎回同一compilerを保証しないため、release再現性が必要になった時点でRust version pinまたはrelease manifestへのversion記録を追加する。これはツール更新ポリシーの変更なので本spikeで勝手に固定しない。
 
-## 配布成果物の選択肢と判断待ち
+## 初期preview配布成果物の決定
 
 | 選択肢 | 長所 | 制約 |
 | --- | --- | --- |
-| portable ZIP（初期preview推奨） | release EXE、license、checksumをまとめるだけで可逆。package identityやinstaller技術を先送りできる | unsigned EXEはSmartScreen警告や企業blockの可能性。install/update/uninstall統合なし。一般公開の最終方式にはしない |
+| portable ZIP（初期preview採用） | release EXE、license、checksumをまとめるだけで可逆。package identityやinstaller技術を先送りできる | unsigned EXEはSmartScreen警告や企業blockの可能性。install/update/uninstall統合なし。一般公開の最終方式にはしない |
 | Microsoft Store向けMSIX | StoreがMSIXを再署名し、trusted install、更新、差分downloadを提供 | Partner Center、package identity、manifest、Store policy/運用を早期に確定する |
 | direct download署名済みMSIX | App Installer更新、package identity、自前配布制御 | CA-trusted署名（MicrosoftはAzure Artifact Signing等を案内）、timestamp、hosting、更新運用が必要。self-signedは一般配布に不適 |
 | MSI/EXE installer | 既存Win32配布や柔軟なbootstrapに適する | installerとPEを自前署名し、更新・hosting・prerequisiteを自前運用する。新規アプリの初期基準にする根拠は弱い |
 
-TASK-3で確定する配布build成果物は、Windows native release buildが生成するx64 PEと、それに対応するversion/build provenance、dependency inventory、SHA-256までとする。portable ZIPは署名・公開を伴わないCI/review artifactの候補に留める。一般ユーザーへのdelivery、GitHub Releases、installer/package、成果物命名、署名、secret、公開範囲、更新は、TASK-3とTASK-11へ依存する既存TASK-12「Windows向け初回リリース方法を選定する」の明示的スコープである。2026-08-29に質問msg_7345dc4ac80cでA〜Cの判断を求めたが20分で回答がなく、このメモでは最終配布方式を確定していない。
+2026-08-29にユーザーが選択肢Aを承認したため、初期MVP/previewの配布build成果物は、Windows native MSVCで生成したx64 release EXE、製品のlicense、EXEに対するSHA-256 checksumを1つのportable ZIPにまとめ、非公開のCI artifactとして保存する。ZIP自体は署名も一般公開も行わず、通常のbuild/test jobへ署名credentialを渡さない。製品crateとrepository licenseが追加された後、TASK-11のCI構築でこの契約をworkflowへ配線する。
+
+これは初期MVP/previewの基準であり、一般公開方式の決定ではない。署名済みMSIX、Microsoft Store、direct download、GitHub Releases、成果物命名、publisher identity、secret、更新方式は、一般公開前にTASK-12で再評価する。
 
 ## 将来のmacOS/Linuxとcross compile
 

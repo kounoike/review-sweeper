@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@kounoike'
 created_date: '2026-08-20 18:13'
-updated_date: '2026-08-29 03:39'
+updated_date: '2026-08-29 03:45'
 labels:
   - project-setup
 milestone: m-0
@@ -54,7 +54,7 @@ ADR-0001/0002に基づくRustネイティブアプリをWindowsで再現可能�
 2. 初期build基準をWindows native x86-64、x86_64-pc-windows-msvc、VS 2022/Windows SDK、GPUI pinに定め、ARM64/macOS/Linux/cross compileの制約と再検討条件を技術メモへ記録する。
 3. GPUI evidence crateを対象にwindows-build-dev、windows-check、windows-build-releaseをmise.tomlへ追加し、将来の製品workspaceへ移すtarget契約を示す。
 4. Windows native MSVCでfmt、clippy、test、release buildを実証し、PE header、runtime dependency、SHA-256を確認する。設定/文書はmise tasks validate、git diff --check、backlog-check、adr-doctorで検証する。
-5. TASK-3の成果物契約をrelease x64 PEとprovenance/dependency inventory/SHA-256までに限定し、GitHub Releases、installer/package、署名、公開、更新の最終方式は既存TASK-12に残す。
+5. ユーザー承認Aに基づき、初期MVP/previewのCI成果物をWindows x64 MSVC release EXE・license・SHA-256 checksumを含むportable ZIPと確定する。一般公開方式はTASK-12、workflowへの実配線は製品crateとlicense追加後のTASK-11、ARM64は需要・runner・GPUI実機検証が揃った時点の再評価へ残す。
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -67,10 +67,14 @@ ADR-0001/0002に基づくRustネイティブアプリをWindowsで再現可能�
 2026-08-29 scope確認: TASK-12がTASK-3/TASK-11に依存し、GitHub Releases、installer/package manager、成果物命名、署名/checksum/secret、公開範囲、更新を明示的に担当する。質問msg_7345dc4ac80cは2回合計20分timeoutし未回答。このためTASK-3では一般配布方式を確定せず、Windows native release x64 PEとprovenance/dependency inventory/SHA-256までをbuild成果物契約とし、公開packageの最終決定をTASK-12へ残す。portable ZIPは非公開CI/review artifact候補に留める。
 
 2026-08-29 検証: Windows Rust 1.98.0/MSVC 14.39でcargo fmt --check、x86_64-pc-windows-msvc向けclippy -D warnings、test（4 passed）、release buildが成功。11,101,696 byteのx64 PE、SHA-256 0d6d001cc999137164f9ab5f5e9dd7c76bbcd759aa5568fac32ec28a9cd0ba05を確認。dumpbinでCUI subsystem（製品crateでGUI化が必要）とVCRUNTIME140/Universal CRT/system DLL依存を確認した。mise tasks validateは14 task/error 0/warning 0、git diff --check、backlog-check、adr-doctorも成功。Windows側mise.exeは未導入のためmise process自体はLinux側schema/依存graph検証、Windows側ではtaskと同一cargo command bodyを直接実行した。生成したWindows Temp build cacheは記録後に削除した。
+
+2026-08-29 承認反映: ユーザーは選択肢Aを承認した。初期MVP/previewではWindows x64 MSVC release EXE、製品license、EXEのSHA-256 checksumをportable ZIPとして非公開CI artifact化する。一般公開前に署名済みMSIX、Microsoft Store、direct downloadをTASK-12で再評価し、ARM64は利用者需要・runner・GPUI実機検証が揃った時点で再検討する。製品crateとrepository licenseは未作成のため、workflowへの実配線はTASK-11で行う。
+
+2026-08-29 最終検証: 承認反映後にmise tasks validate（14 task）、git diff --check、mise run backlog-check、mise run adr-doctorを実行し、すべて成功した。今回の追加差分はBacklog文書のみでRust実装は変更していないため、Windows native fmt/clippy/test/release buildは直前の成功結果を継承した。
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Windows初期build基準をWindows native x86-64 / x86_64-pc-windows-msvc / VS 2022・Windows SDK / pinned GPUI・Cargo.lockに定め、開発・windows-2022 CI・release buildと将来OS/cross compile制約をdoc-7へ記録した。mise.tomlへwindows-build-dev/windows-check/windows-build-releaseを追加。Windows Rust 1.98.0/MSVC 14.39でfmt、clippy、test 4件、release buildを成功させ、11,101,696 byte x64 PE、SHA-256、VCRUNTIME140/Universal CRT依存を確認した。mise task schema/graph、git diff --check、backlog-check、adr-doctorも成功。一般配布package/署名/公開/更新は既存TASK-12のスコープとして未確定のまま保持し、このdispatchの指示どおりpush/PR/mergeは行わない。
+Windows初期build基準をWindows native x86-64 / x86_64-pc-windows-msvc / VS 2022・Windows SDK / pinned GPUI・Cargo.lockに定め、開発・windows-2022 CI・release buildと将来OS/cross compile制約をdoc-7へ記録した。ユーザー承認Aに基づき、初期MVP/previewはx64 release EXE・license・SHA-256 checksumを含むportable ZIPを非公開CI artifactとし、一般公開前に署名済みMSIX、Microsoft Store、direct downloadを再評価する。ARM64は需要・runner・GPUI実機検証が揃った時点で再検討する。Windows Rust 1.98.0/MSVC 14.39でfmt、clippy、test 4件、release buildを成功させ、x64 PE・SHA-256・runtime依存を確認済み。承認反映後もmise tasks validate（14 task）、git diff --check、backlog-check、adr-doctorが成功した。製品crate/license追加後のworkflow実配線はTASK-11、一般公開方式はTASK-12に残し、このdispatchではpush/PR/mergeを行わない。
 <!-- SECTION:FINAL_SUMMARY:END -->
