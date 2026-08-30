@@ -1,11 +1,11 @@
 ---
 id: TASK-8
 title: テスト戦略とfixtureを設計する
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-08-20 18:06'
-updated_date: '2026-08-30 20:18'
+updated_date: '2026-08-30 20:30'
 labels:
   - project-setup
 milestone: m-0
@@ -69,6 +69,8 @@ GitHub連携、差分解析、worktree状態、準備パイプライン、UI状�
 2026-08-31 調査・設計: ADR-0002/0006/0007/0010/0011/0012およびTASK-1/2/4/5/7の成果物をtest oracleとして整理した。doc-10にunit/domain/API contract/fixture/hermetic integration/Windows native integration/UI-E2Eの境界、GitHub差分・review・Checks、worktree、ExecutionBackend、async/cancel/retry/corruption/backend混在のmatrix、hermetic/windows/github-live/wslのCI laneを記録した。live GitHub semantics、Windows IME/UIA/ConPTY、runner調達、performance budgetはmockで代替せず後続タスクの判断として残した。
 
 2026-08-31 検証: test-strategy crateのcargo fmt --check、clippy -D warnings、test（6件）、check、build、fixture verifyが成功した。関連regressionとしてTASK-4 diff/review fixture、TASK-7 ExecutionBackend test（6件+doctest）、TASK-5 persistence/cache test（13件）が成功し、git diff --check、mise run backlog-check、mise run adr-doctorも成功した。rootにはCargo.tomlがないためrootのmise run fmt/lint/test/check/buildではなく各manifestを明示した。Windows native UI/IME/UIA/ConPTYおよびGitHub live APIは設計上別laneであり、このLinux hermetic prototypeでは未実行・成功扱いにしていない。
+
+2026-08-31 ユーザーがPR #8を承認。全AC・DoDと記録済み検証結果を確認し、merge前にDoneへ更新した。
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
