@@ -1,0 +1,41 @@
+{
+  "create_pending_review": {
+    "method": "POST",
+    "path": "/repos/OWNER/REPO/pulls/42/reviews",
+    "body": {
+      "commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "",
+      "comments": [
+        {
+          "path": "src/lines.txt",
+          "line": 2,
+          "side": "RIGHT",
+          "body": "追加行への指摘"
+        },
+        {
+          "path": "src/lines.txt",
+          "line": 2,
+          "side": "LEFT",
+          "body": "削除行への指摘"
+        },
+        {
+          "path": "assets/binary.dat",
+          "subject_type": "file",
+          "body": "ファイル全体への指摘"
+        }
+      ]
+    }
+  },
+  "submit_pending_review": {
+    "method": "POST",
+    "path": "/repos/OWNER/REPO/pulls/42/reviews/80/events",
+    "body": {
+      "event": "COMMENT",
+      "body": "レビュー結果"
+    }
+  },
+  "delete_pending_review": {
+    "method": "DELETE",
+    "path": "/repos/OWNER/REPO/pulls/42/reviews/80"
+  }
+}

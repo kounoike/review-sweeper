@@ -1,0 +1,29 @@
+[
+  {
+    "sha": "1111111111111111111111111111111111111111",
+    "filename": "src/lines.txt",
+    "status": "modified",
+    "additions": 2,
+    "deletions": 2,
+    "changes": 4,
+    "patch": "@@ -1,5 +1,5 @@\n one\n-old-left\n+new-right\n context\n-deleted-left\n+added-right\n tail"
+  },
+  {
+    "sha": "2222222222222222222222222222222222222222",
+    "filename": "src/rename-new.txt",
+    "previous_filename": "src/rename-old.txt",
+    "status": "renamed",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "patch": "@@ -7,1 +7,1 @@\n-line 7\n+line seven"
+  },
+  {
+    "sha": "3333333333333333333333333333333333333333",
+    "filename": "assets/binary.dat",
+    "status": "modified",
+    "additions": 0,
+    "deletions": 0,
+    "changes": 0
+  }
+]

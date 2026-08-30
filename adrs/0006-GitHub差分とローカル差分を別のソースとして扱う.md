@@ -4,7 +4,7 @@ Date: 2026-08-21
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -14,12 +14,12 @@ GitHubの差分データは高速表示と、GitHubのレビューAPIでイン�
 
 ## Decision
 
-GitHubが提供するPR差分データと、ローカルで計算したgit差分データを別のドメイン概念として表現する。
+GitHubが提供するPR差分データと、ローカルで計算したgit差分データを別のドメイン概念として表現し、共通の構造化差分モデルへparseする。
 
-UIは共通の差分ビューアーコンポーネントで描画してよいが、アプリはソースの起点と行位置の意味を保持する。
+各snapshotはsource、比較revision・commit identity、GitHub review comment座標を失わない。UIは共通の差分ビューアーコンポーネントで描画してよいが、review commentの送信座標はGitHub review snapshotからのみ生成し、local差分やwhitespace除外表示から推測・逆変換しない。
 
 ## Consequences
 
 - インラインコメントの対応付けをGitHubの意味論に合わせ続けられる。
 - ローカル比較をGitHubの正規PR差分と偽ることなく、より豊かなレビューに利用できる。
-- ローカル差分とGitHubレビューコメントAPIの間をまたぐ処理では、明示的な変換またはマッピングが必要になる。
+- local差分とGitHub review snapshotの対応関係は比較表示に利用できるが、GitHubレビューコメントAPIの送信座標には昇格させない。
