@@ -22,6 +22,10 @@ pub enum StorageError {
     UnrecoverableCorruption,
     #[error("fixture migration failure")]
     FixtureMigrationFailure,
+    #[error("generated backup failed integrity validation")]
+    InvalidGeneratedBackup,
+    #[error("fixture backup failure before publish")]
+    FixtureBackupFailure,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -272,15 +276,53 @@ impl Storage {
     }
 
     pub fn create_backup(&self) -> Result<(), StorageError> {
+        self.create_backup_inner(false)
+    }
+
+    fn create_backup_inner(&self, fail_before_publish: bool) -> Result<(), StorageError> {
         let backup_path = self.root.join("state.backup.sqlite3");
-        if backup_path.exists() {
-            fs::remove_file(&backup_path)?;
-        }
-        let mut destination = Connection::open(backup_path)?;
+        let temporary = tempfile::Builder::new()
+            .prefix(".state.backup.")
+            .suffix(".sqlite3.tmp")
+            .tempfile_in(&self.root)?;
+        let temporary_path = temporary.into_temp_path();
+        let mut destination = Connection::open(&temporary_path)?;
         let backup = Backup::new(&self.connection, &mut destination)?;
         backup.run_to_completion(32, std::time::Duration::from_millis(1), None)?;
+        drop(backup);
+        drop(destination);
+
+        let generated = Connection::open(&temporary_path)?;
+        if !database_is_valid(&generated) {
+            return Err(StorageError::InvalidGeneratedBackup);
+        }
+        drop(generated);
+        File::open(&temporary_path)?.sync_all()?;
+
+        if fail_before_publish {
+            return Err(StorageError::FixtureBackupFailure);
+        }
+
+        // TempPath::persistは同一directory内でrenameする。Windowsでは
+        // MoveFileExW(MOVEFILE_REPLACE_EXISTING)を使うため、既存backupを先に
+        // 削除せず置換でき、失敗時はtemporaryのdrop cleanupに任せられる。
+        temporary_path
+            .persist(&backup_path)
+            .map_err(|error| StorageError::Io(error.error))?;
+        sync_parent_directory(&self.root)?;
         Ok(())
     }
+}
+
+#[cfg(unix)]
+fn sync_parent_directory(directory: &Path) -> Result<(), StorageError> {
+    File::open(directory)?.sync_all()?;
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn sync_parent_directory(_directory: &Path) -> Result<(), StorageError> {
+    Ok(())
 }
 
 fn configure(connection: &Connection) -> Result<(), StorageError> {
@@ -517,6 +559,46 @@ mod tests {
             "保持するdraft"
         );
         assert!(directory.path().join("state.corrupt.sqlite3").exists());
+    }
+
+    #[test]
+    fn failed_backup_keeps_last_valid_backup_and_cleans_temporary_file() {
+        let directory = tempdir().unwrap();
+        let backup_path = directory.path().join("state.backup.sqlite3");
+        let mut storage = Storage::open(directory.path()).unwrap();
+        storage
+            .save_review(&review("a", 1, "head", "最後の正常backup"))
+            .unwrap();
+        storage.create_backup().unwrap();
+        let previous_backup = fs::read(&backup_path).unwrap();
+
+        storage
+            .save_review(&review("a", 1, "head", "未publishの新状態"))
+            .unwrap();
+        assert!(matches!(
+            storage.create_backup_inner(true),
+            Err(StorageError::FixtureBackupFailure)
+        ));
+        assert_eq!(fs::read(&backup_path).unwrap(), previous_backup);
+        assert!(fs::read_dir(directory.path()).unwrap().all(|entry| {
+            !entry
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".state.backup.")
+        }));
+
+        drop(storage);
+        fs::write(directory.path().join("state.sqlite3"), b"not sqlite").unwrap();
+        let restored = Storage::open(directory.path()).unwrap();
+        assert_eq!(
+            restored
+                .load_review("a", 100, 1, "head")
+                .unwrap()
+                .unwrap()
+                .draft,
+            "最後の正常backup"
+        );
     }
 
     #[test]

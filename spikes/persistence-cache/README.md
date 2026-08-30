@@ -53,7 +53,7 @@ SQLiteはtransactionのatomic commitとcrash後のjournal recoveryを提供す�
 
 ## 更新・削除・migration policy
 
-1. durable structured stateの全writeはtransactionで行い、schema versionを記録する。migration前にSQLite Backup APIで世代付きbackupを作り、migrationは一transaction、失敗時はrollbackする。
+1. durable structured stateの全writeはtransactionで行い、schema versionを記録する。migration前のbackupは既存の正常世代を削除せず、同一directoryの一意temporary fileへSQLite Backup APIで完成させる。`quick_check`とfile syncが成功した後だけ固定backup名へreplace publishし、通常の失敗ではtemporaryをdrop cleanupする。Windowsでは通常の`rename`による既存destination上書きに依存せず、`MoveFileExW(MOVEFILE_REPLACE_EXISTING)`相当のreplace semanticsを使うため、publish前の失敗・crashでは最後の正常backupへ触れない。migrationは一transactionとし、失敗時はrollbackする。
 2. cacheは再取得可能、review session/draft・設定・worktree bindingはdurable user stateとして扱う。容量圧迫時もcacheから削除し、durable stateをevictしない。
 3. cache blobはSHA-256 digest検証後にpublishし、未参照blob、欠損index、digest不一致file、publish途中のtemporary fileを起動時または低優先度保守のorphan GCで修復する。GCはcache index/fileだけを対象とし、review session/draft、設定、worktree bindingを削除しない。force-pushは旧revisionを即削除せずstale/tombstoneとしてretention期限まで保持する。
 4. worktree削除は実在、record ownership、dirty/staged/untracked/conflicted、process利用中を再確認し、ユーザー確認なしにdirty worktreeを削除しない。DB record削除とfilesystem削除を同一transactionとみなさず、intent/resultを段階記録する。
@@ -83,6 +83,7 @@ cargo test --manifest-path spikes/persistence-cache/Cargo.toml
 - SQLite fileをclose/reopenする実再起動と、複数sessionの永続化
 - schema v1からv2へのmigration途中の意図的失敗で、DDLと`user_version`が同時rollbackすること
 - SQLite Backup APIで作成したbackupからの破損database復元と、破損原本のquarantine
+- 新backupのpublish前に失敗させた場合も最後の正常backupがbyte単位で維持され、temporaryがcleanupされ、そのbackupから復元できること
 - SHA-256 content-addressed blobのpublish、未参照blob、欠損index、digest不一致fileのorphan GC、およびGC後もreview draftが保持されること
 
 ## 一次資料

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-08-20 18:06'
-updated_date: '2026-08-29 03:41'
+updated_date: '2026-08-30 08:13'
 labels:
   - project-setup
 milestone: m-0
@@ -60,6 +60,8 @@ ordinal: 5
 3. file cacheのdigest検証、missing/corrupt参照修復、未参照blobのorphan GCとdurable state非破壊を検証する。
 4. READMEとTASK-5へ承認内容・客観的検証結果を反映し、AC/DoD/final summaryを更新する。
 5. Rust検証、Backlog/ADR検証、diff確認後、TASK-5関連変更だけをcommitする（push/PR/mergeは対象外）。
+
+6. PR #5レビュー指摘に対応し、既存backupを保持したまま同一directoryの一意temporaryへSQLite Backup APIで生成・整合性検証し、Windowsのreplace semanticsを考慮してpublishする。失敗時の既存backup保持とtemporary cleanupをfixtureで検証し、PR本文と検証記録を更新する。
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -74,10 +76,14 @@ Fixture検証: `cargo fmt --manifest-path spikes/persistence-cache/Cargo.toml`�
 2026-08-29 ユーザー承認: Hybrid方式に限定する。非secret structured stateはWindows FOLDERID_LocalAppData配下のSQLite、大容量diff/blobはcontent-addressed file cache、secretはWindows Credential Managerのみとし、orphan GCを設計・検証対象に含める。
 
 2026-08-29 承認反映・実storage検証: Accepted ADR-0012としてHybrid方式を確定し、ADR-0002/0011へ相互linkした。`rusqlite` bundled SQLiteとtemporary filesystemを用いたfixtureを追加し、close/reopen後の複数account/PR・force-push revision保持、v1→v2 migration失敗時のDDL/`user_version`同時rollback、SQLite Backup API backupからの破損DB復元・破損原本quarantine、backend binding再起動保持、SHA-256 content-addressed cacheの未参照blob・欠損index・digest不一致file GC、およびGC後のreview draft保持を検証した。`cargo fmt --manifest-path spikes/persistence-cache/Cargo.toml`、`cargo clippy --manifest-path spikes/persistence-cache/Cargo.toml --all-targets -- -D warnings`、`cargo test --manifest-path spikes/persistence-cache/Cargo.toml`（12 tests）、`git diff --check`、`mise run adr-doctor`、`mise run backlog-check`はいずれも成功。
+
+2026-08-30 PR #5レビュー対応開始: `create_backup`が固定backupを先に削除するため、新backup生成中のerror/crashで最後の正常backupを失う非破壊方針違反を確認した。同一directoryの一意temporaryに完成させ、`quick_check`とfile sync後だけreplace publishし、失敗時は既存backupを保持してtemporaryをcleanupする設計へ修正する。
+
+2026-08-30 PR #5レビュー修正完了: `create_backup`は既存backupを削除せず、同一directoryの一意temporaryへSQLite Backup APIで生成し、`quick_check`・file sync後に`TempPath::persist`でreplace publishする。Windowsでは同APIが`MoveFileExW(MOVEFILE_REPLACE_EXISTING)`を使い、通常errorではRAII cleanupされ、publish前のcrashも既存backupへ触れない。意図的なpublish前失敗で旧backupのbyte一致・temporary消去・旧backupからの復元を確認した。`cargo fmt --manifest-path spikes/persistence-cache/Cargo.toml -- --check`、`cargo clippy --manifest-path spikes/persistence-cache/Cargo.toml --all-targets -- -D warnings`、`cargo test --manifest-path spikes/persistence-cache/Cargo.toml`（13 tests）、`git diff --check`、`mise run backlog-check`、`mise run adr-doctor`は成功。
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-ユーザー承認済みHybrid方式をAccepted ADR-0012へ記録し、非secret structured stateをLocalAppData内SQLite、大容量diff/blobをSHA-256 content-addressed file cache、secretをWindows Credential Managerだけに置く境界を確定した。実SQLite/file fixtureで再起動、複数PR/force-push、transactional migration rollback、破損DBのbackup recovery、backend unavailable時のno-fallback、orphan/missing/corrupt cache GCとdurable draft保持を12 testsで検証した。fmt、clippy -D warnings、test、git diff --check、adr-doctor、backlog-checkは成功し、push/PR/mergeは依頼どおり未実施のためタスク全体はPR作成待ち。
+Hybrid永続化方針と実storage fixtureに加え、PR #5レビュー指摘の非破壊backup publishを修正した。既存backupを保持したまま同一directoryの一意temporaryへSQLite Backup APIで生成し、整合性検証・file sync後だけWindows対応のreplace semanticsでpublishするため、通常errorではtemporaryをcleanupし、publish前のcrashでも既存backupへ触れない。publish前失敗でも旧backupがbyte単位で残り復元可能であることを含む13 tests、fmt check、clippy -D warnings、git diff --check、backlog-check、adr-doctorに成功し、PR #5へ同branchで反映する。
 <!-- SECTION:FINAL_SUMMARY:END -->
