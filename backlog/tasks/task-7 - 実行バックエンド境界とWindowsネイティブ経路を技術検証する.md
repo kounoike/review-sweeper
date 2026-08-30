@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@kounoike'
 created_date: '2026-08-23 00:49'
-updated_date: '2026-08-29 04:04'
+updated_date: '2026-08-30 08:13'
 labels:
   - project-setup
   - worktree
@@ -41,7 +41,7 @@ ADR-0002に基づき、GUIからコマンド実行環境を分離する共通境
 <!-- AC:BEGIN -->
 - [x] #1 技術メモでgit・Worktree操作・workspace setupに共通なCommandRequest/CommandOutcome相当の契約を定義し、argv、cwd、env差分、cancel、stdout/stderr log、exit/launch/IO errorの境界とsecret非注入原則を明示する
 - [x] #2 技術メモでWorktreeごとにbackend kindと安定identifierを固定して永続化・表示するモデル、不一致時に暗黙fallbackせず再選択を要求する動作を定義する
-- [x] #3 Rustの最小prototypeと自動テストでWindows native processの正常終了、非zero終了、起動失敗、cancel、stdout/stderr分離取得を検証し、Windows実機未実行項目は再現コマンドと制約を明記する
+- [x] #3 Windows側PowerShellとx86_64-pc-windows-msvc Rust toolchainでWindowsNativeBackendをruntime実行し、正常終了、nonzero終了、起動失敗、cancel、stdout/stderr分離取得を自動テストで検証する
 - [x] #4 Windows host pathとbackend内pathを別型として扱い、暗黙変換を禁止するAPI境界と、backendが責任を持つ明示変換・検証・変換不能errorを技術メモおよび型/テストで示す
 - [x] #5 WSL2、macOS native、Linux nativeを既存境界へ追加する拡張点、ADR-0002とTASK-2/ADR-0011の認証・secret境界を維持する責務、再検討条件を技術メモに記録し、WSL固有実装を含めない
 <!-- AC:END -->
@@ -66,22 +66,15 @@ ADR-0002に基づき、GUIからコマンド実行環境を分離する共通境
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-2026-08-29 承認済み修正版A案を反映: Review Sweeper独自のExecutionBackend境界を正本とし、stdベースWindowsNativeBackend prototypeではprocess-wrap 10.0.0のWindows Job Object/POSIX process groupを第一候補として採用した。command-group 5.0.1は前身、processkit 3.3.4はTokio前提の高機能な将来候補として比較し、Tokio採用、graceful cancel、高度なprocess-tree supervisionはTASK-13へ残した。WSLはWindows側wsl.exe adapterとWSL内部process管理の責務を分離し、実装はTASK-27へ残した。
+2026-08-29 承認済み修正版A案を反映: Review Sweeper独自のExecutionBackend境界を正本とし、stdベースWindowsNativeBackend prototypeではprocess-wrap 10.0.0のWindows Job Object/POSIX process groupを第一候補として採用した。command-group 5.0.1は前身、processkit 3.3.4はTokio前提の将来候補として比較し、Tokio採用、graceful cancel、高度なprocess-tree supervisionはTASK-13へ残した。WSLはWindows側wsl.exe adapterとWSL内部process管理の責務を分離し、実装はTASK-27へ残した。
 
 契約結果: CommandRequestはshell-freeなprogram/argv、backend-bound cwd、非secretのenv差分を持つ。stdout/stderrはbyte LogEvent streamとして分離し、nonzero exit/cancelのCompletionとlaunch/IO/path/backend errorを分離した。Worktreeはkindとstable identifierを固定し、不一致時は暗黙fallbackせず再選択を要求する。HostPathとBackendPathは別型で、明示変換・absolute検証・backend mismatch errorをprototypeとcompile-fail testで確認した。ADR-0011のsecretをargv/env/logへ注入しない境界を維持した。
 
-検証結果 (2026-08-29):
-- mise exec -- cargo test --manifest-path spikes/execution-backend/Cargo.toml --all-features: 成功。6 integration test（正常終了、nonzero、launch失敗、cancel、stdout/stderr分離、stable identifier/path mismatch）と1 compile-fail doc test（HostPath/BackendPath分離）が成功。
-- host: manifest指定のcargo fmt --check、clippy --all-targets --all-features -D warnings、check、buildが成功。
-- Windows cross target: x86_64-pc-windows-msvc向けcargo checkとclippy -D warningsが成功し、JobObject分岐のcompileを確認。現在はWSL2/Linux環境でMSVC binaryをlink/runできないためWindows Job Object runtimeは未実測。doc-9にWindows実機のcargo test/clippy再現commandと制約を記録。
-- git diff --checkおよびgit diff --cached --check: 成功。
-- mise run backlog-check: 成功。
-- mise run adr-doctor: 成功 (No issues found)。
-- rootのmise run fmt/lint/test/build/checkはrepository rootにCargo.tomlがなく失敗した。root Rust workspace構築はTASK-10のscopeであり、TASK-7 spikeはmanifest指定の同等commandですべて成功した。
+Windows runtime検証 (2026-08-30): Windows PowerShell 5.1.22621.6133から同branchのUNC pathを開き、Microsoft Windows NT 10.0.22631.0、rustc 1.98.0 (host: x86_64-pc-windows-msvc) で実行した。integration testはWindows上でWindowsNativeBackendを直接生成するよう修正し、process-wrap::std::JobObject分岐で正常終了、nonzero exit 23、存在しないprogramのLaunch error、cancel、stdout/stderr分離、stable identifier/path mismatchの6件が成功し、compile-fail doc test 1件とWindows clippy -D warningsも成功した。UNC直下の既定targetではincremental session lockがos error -2147024895となったため、CARGO_INCREMENTAL=0とWindows localのCARGO_TARGET_DIRを使用し、同じsourceをruntime検証した。host側もmanifest指定のfmt --check、clippy、test、check、build、git diff --check、backlog-check、adr-doctorが成功した。repository rootにCargo.tomlがないためrootのmise run checkは対象外で、TASK-7 spikeはmanifest指定の同等commandを使用した。
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Review Sweeper独自のExecutionBackend契約とstdベースWindowsNativeBackend prototypeを追加し、process-wrapのWindows Job Object/POSIX process groupを第一候補としてCommandRequest、BackendPath、stdout/stderr LogEvent、Completion、cancel/error、stable identifier、secret非注入を具体化した。技術メモではcommand-group/processkit比較、Worktree固定とno-fallback、WSL adapter責務分離、macOS/Linux拡張点、TASK-13/TASK-27への残課題を記録した。Linux/WSL上の6 integration testと1 compile-fail test、host fmt/clippy/check/build、Windows MSVC target check/clippy、git diff check、backlog-check、adr-doctorに成功した。Windows Job Object runtime実測はWindows実機用再現commandを記載して残した。
+Review Sweeper独自のExecutionBackend契約とstdベースWindowsNativeBackend prototypeを維持し、Windows runtime testがWindowsNativeBackendを直接使うよう修正した。Windows 11 (Microsoft Windows NT 10.0.22631.0)、PowerShell 5.1、x86_64-pc-windows-msvc rustc 1.98.0で正常終了、nonzero、launch失敗、cancel、stdout/stderr、identifier/path境界の6 integration testと1 compile-fail test、clippyを実行してJob Object分岐のruntime成功を確認した。技術メモへWindows環境、再現command、UNC build出力の制約を記録し、host fmt/clippy/test/check/build、git diff check、backlog-check、adr-doctorも成功した。
 <!-- SECTION:FINAL_SUMMARY:END -->

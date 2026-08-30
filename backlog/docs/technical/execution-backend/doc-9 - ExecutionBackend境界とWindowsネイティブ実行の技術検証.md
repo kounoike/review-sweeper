@@ -3,7 +3,7 @@ id: doc-9
 title: ExecutionBackend境界とWindowsネイティブ実行の技術検証
 type: specification
 created_date: '2026-08-29 03:58'
-updated_date: '2026-08-29 04:02'
+updated_date: '2026-08-30 08:11'
 tags:
   - execution-backend
   - windows
@@ -57,7 +57,7 @@ Windows GUIが所有するhost pathと実行backend内pathは別の型とする�
 
 | 候補 | 確認結果 | TASK-7での扱い |
 | --- | --- | --- |
-| `process-wrap 10.0.0` | `std`と`tokio1` frontendを選べ、Windows `JobObject`とUnix `ProcessGroup`をcomposable wrapperとして提供する。Windowsではsuspended起動後にJobへ関連付けてresumeし、cancel時の`kill`をjob/process groupへ伝播する。Linux/WSL上でprototype 6 integration testとpath型compile-fail testが成功し、Windows MSVC targetのcompile checkも検証対象とした。 | std prototypeの第一候補。I/O streaming、error分類、cancel policyはReview Sweeper側の境界に保持する。 |
+| `process-wrap 10.0.0` | `std`と`tokio1` frontendを選べ、Windows `JobObject`とUnix `ProcessGroup`をcomposable wrapperとして提供する。Windowsではsuspended起動後にJobへ関連付けてresumeし、cancel時の`kill`をjob/process groupへ伝播する。Linux/WSL上のprototype testに加え、Windows 11上のx86_64-pc-windows-msvc binaryで6 integration testとpath型compile-fail testを実行し、Windows Job Object分岐のruntime動作を確認した。 | std prototypeの第一候補。I/O streaming、error分類、cancel policyはReview Sweeper側の境界に保持する。 |
 | `command-group 5.0.1` | `std::process::Command`拡張としてWindows Job Object / POSIX process groupを提供するが、公式に`process-wrap`がより柔軟でcomposableな後継と案内されている。 | 前身として記録し、新規prototypeには採用しない。既存利用資産が生じた場合のmigration比較対象。 |
 | `processkit 3.3.4` | Tokio必須で、kill-on-drop、streaming、timeout/cancellation、pipeline、readiness、supervision、mock seam、Windows Job/Linux cgroup/POSIX group等を高水準で提供する。機能範囲と依存・runtime判断がTASK-7の最小spikeを超える。 | Tokio採用と高度なtree supervisionをTASK-13で決める際の将来候補。 |
 
@@ -80,18 +80,17 @@ process-wrap採用をproduction決定とみなさない。Windows nested Job制�
 - stdout/stderrを別LogEventとして分離し、sequenceを付ける
 - relative host pathの変換拒否とbackend不一致の拒否
 
-現在の実行環境はWSL2上のLinuxである。この環境では同一executorをPOSIX process groupで実行してcontractとI/O/cancelを検証できるが、Windows Job Objectのruntime挙動は実測できない。Windows実機ではrepository rootから次を再現する。
+2026-08-30に同branchのUNC pathをWindows PowerShellから開き、Windows側MSVC Rust toolchainでruntime検証した。環境はMicrosoft Windows NT 10.0.22631.0、Windows PowerShell 5.1.22621.6133、rustc 1.98.0（host: x86_64-pc-windows-msvc）である。integration testはWindows上で`WindowsNativeBackend`を直接生成するため、`process-wrap::std::JobObject`を組み込む分岐を実行する。
 
 ```powershell
-cargo test --manifest-path spikes/execution-backend/Cargo.toml --target x86_64-pc-windows-msvc
-cargo clippy --manifest-path spikes/execution-backend/Cargo.toml --target x86_64-pc-windows-msvc --all-targets --all-features -- -D warnings
+Set-Location "\\wsl.localhost\Ubuntu-24.04\home\kounoike\orca\workspaces\review-sweeper\task-7-execution-backend"
+$env:CARGO_INCREMENTAL = "0"
+$env:CARGO_TARGET_DIR = "$env:LOCALAPPDATA\Temp\review-sweeper-task7-target"
+cargo test --manifest-path "spikes\execution-backend\Cargo.toml" --target x86_64-pc-windows-msvc -- --nocapture
+cargo clippy --manifest-path "spikes\execution-backend\Cargo.toml" --target x86_64-pc-windows-msvc --all-targets --all-features -- -D warnings
 ```
 
-WSL/Linuxからは次でWindows分岐の型checkだけを行える。MSVC linkerがないためtest binaryのlink/runはできず、Windows Job Objectのkill伝播を証明しない。
-
-```bash
-cargo check --manifest-path spikes/execution-backend/Cargo.toml --target x86_64-pc-windows-msvc --all-targets
-```
+Windows runtimeでは正常終了、nonzero exit、存在しないprogramのlaunch失敗、cancel、stdout/stderr分離、stable identifier/path境界の6 integration testと1 compile-fail doc testがすべて成功し、clippyもwarningなしで成功した。UNC path直下の既定`target`ではWindowsのincremental session lock作成が`os error -2147024895`となるため、上記のとおりincrementalを無効化しWindows local filesystem上の一時`CARGO_TARGET_DIR`を使う。これはtest対象sourceを変えず、生成物だけをWindows local filesystemへ置く再現条件である。
 
 # WSL adapterと将来native backend
 

@@ -1,12 +1,20 @@
 use std::{collections::BTreeMap, ffi::OsString, path::PathBuf, thread, time::Duration};
 
+#[cfg(not(windows))]
+use execution_backend_spike::StdNativeBackend;
 use execution_backend_spike::{
     BackendIdentifier, CancellationToken, CommandRequest, ExecutionBackend, ExecutionError,
-    HostPath, LogEvent, LogStream, StdNativeBackend, Termination, WindowsNativeBackend, os,
+    HostPath, LogEvent, LogStream, Termination, WindowsNativeBackend, os,
 };
 
-fn backend_and_cwd() -> (StdNativeBackend, execution_backend_spike::BackendPath) {
-    let backend = StdNativeBackend::host_native_harness();
+fn backend_and_cwd() -> (
+    Box<dyn ExecutionBackend>,
+    execution_backend_spike::BackendPath,
+) {
+    #[cfg(windows)]
+    let backend: Box<dyn ExecutionBackend> = Box::new(WindowsNativeBackend::new());
+    #[cfg(not(windows))]
+    let backend: Box<dyn ExecutionBackend> = Box::new(StdNativeBackend::host_native_harness());
     let cwd = backend
         .host_path_to_backend(&HostPath::new(
             std::env::current_dir().expect("current directory"),
@@ -21,7 +29,7 @@ fn windows_backend_identifier_is_stable() {
     assert_eq!(backend.identifier().as_str(), "windows-native:v1");
 }
 
-fn request(argument: &str) -> (StdNativeBackend, CommandRequest) {
+fn request(argument: &str) -> (Box<dyn ExecutionBackend>, CommandRequest) {
     let (backend, cwd) = backend_and_cwd();
     let request = CommandRequest {
         program: OsString::from(env!("CARGO_BIN_EXE_execution_backend_fixture")),
