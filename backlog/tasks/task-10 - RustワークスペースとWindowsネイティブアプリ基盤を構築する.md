@@ -1,11 +1,11 @@
 ---
 id: TASK-10
 title: RustワークスペースとWindowsネイティブアプリ基盤を構築する
-status: In Progress
+status: Done
 assignee:
   - '@kounoike'
 created_date: ''
-updated_date: '2026-08-30 20:31'
+updated_date: '2026-08-30 21:02'
 labels:
   - project-setup
 milestone: m-0
@@ -82,10 +82,12 @@ ADR-0001に基づき、選定したUIフレームワークを使うRustワーク
 2026-08-31 実装: root Cargo workspaceにcomposition root、domain、application、integrations、execution、GPUI UI、architecture testの7 packageを追加した。GPUI 0.2.2はcfg(windows) dependencyに限定し、Windows以外は構造化UnsupportedPlatform errorを返すため、Windows-only GUIという現スコープを保ちながらhost quality gateを実行可能にした。起動時はtracing subscriberを初期化し、window作成errorをLaunchErrorからcomposition rootの終了code 1へ伝播する。crate責務と後続拡張点はdocs/architecture/rust-workspace.md、Windows依存・mise手順・UNC target制約はdocs/development/windows.mdに記録した。
 
 2026-08-31 検証: WSL hostでmise run fmt、lint、test、check、buildがすべて成功し、application test 1件とCargo metadata依存方向test 1件が成功した。git diff --check、mise run backlog-check、mise run adr-doctor、mise tasks --json（15 task）も成功した。Windows 11 10.0.22631、rustc 1.98.0 x86_64-pc-windows-msvc、VS 2022 MSVC 14.39でmise taskと同一のcargo fmt/clippy -D warnings/test/dev build/release build command bodyが成功した（Windows hostにはmise.exe未導入のためtask schemaはWSL miseで検証）。release EXEは10,936,832 bytes、SHA-256 89758ACE6C350F2D784A33EDFB77BAE5C87F699E42A283448B9E439B6F994843。Windows native processを起動し、Responding=true、MainWindowTitle=Review Sweeper、non-zero HWND=28714310を確認し、CloseMainWindowでexit code 0を確認した。既知事項はGPUI依存proc-macro-error2 2.0.1のfuture-incompatibility warningで、clippy warningではない。
+
+2026-08-31 ユーザーがPR #9を承認。全AC・DoD、WSL quality gate、Windows MSVC buildおよびnative window起動の記録を確認し、merge前にDoneへ更新した。
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-ADR-0001/0002/0003/0010に従い、GPUI 0.2.2をWindows限定adapterに閉じ込めたRust workspace、composition root、domain/application/external integration/execution境界、loggingと構造化起動error、Cargo metadataによる依存方向testを構築した。Windows開発依存・mise task・UNC checkout制約とcrate責務を文書化し、GitHub、git、AI、Review Inbox、diff、terminal、WSLの具体機能は後続taskへ残した。WSL hostのmise run fmt/lint/test/check/buildとBacklog/ADR/diff検証、Windows 11・Rust 1.98.0・MSVC 14.39のfmt/clippy/test/dev/release buildが成功し、release EXEのReview Sweeper windowをnon-zero HWNDで起動して正常終了を確認した。statusはPR review/merge前のためIn Progressを維持する。
+ADR-0001/0002/0003/0010に従い、GPUI 0.2.2をWindows限定adapterに閉じ込めたRust workspace、composition root、domain/application/external integration/execution境界、loggingと構造化起動error、Cargo metadataによる依存方向testを構築した。Windows開発依存・mise task・UNC checkout制約とcrate責務を文書化し、GitHub、git、AI、Review Inbox、diff、terminal、WSLの具体機能は後続taskへ残した。WSL hostのmise run fmt/lint/test/check/buildとBacklog/ADR/diff検証、Windows 11・Rust 1.98.0・MSVC 14.39のfmt/clippy/test/dev/release buildが成功し、release EXEのReview Sweeper windowをnon-zero HWNDで起動して正常終了を確認した。ユーザー承認後、全AC・DoDと検証記録を再確認してDoneへ更新した。
 <!-- SECTION:FINAL_SUMMARY:END -->
