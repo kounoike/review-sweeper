@@ -1,0 +1,18 @@
+[package]
+name = "review-sweeper-ui-gpui"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+review-sweeper-application.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+gpui.workspace = true
+
+[lib]
+test = false
+doctest = false
+bench = false
