@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "fixture_set": "task-8-representative-boundaries",
+  "github": {
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "cases": [
+      { "id": "diff-complete", "kind": "pull_files", "outcome": "complete", "source": "github_review" },
+      { "id": "diff-patch-missing", "kind": "pull_files", "outcome": "partial", "source": "github_review" },
+      { "id": "review-outdated", "kind": "review_comment", "outcome": "unmappable", "side": "RIGHT" },
+      { "id": "review-timeout", "kind": "pending_review", "outcome": "unknown_requires_reconcile" },
+      { "id": "checks-mixed", "kind": "check_runs", "outcome": "mixed", "states": ["success", "failure", "in_progress", "neutral"] }
+    ]
+  },
+  "worktree": {
+    "cases": ["clean", "modified", "staged", "untracked", "conflicted", "head_diverged", "broken"]
+  },
+  "execution_backend": {
+    "cases": [
+      { "id": "windows-native", "backend_id": "windows-native:v1", "outcome": "success" },
+      { "id": "wsl-selected", "backend_id": "wsl:ubuntu-24.04:v1", "outcome": "success" },
+      { "id": "wsl-missing", "backend_id": "wsl:missing:v1", "outcome": "unavailable" },
+      { "id": "mixed-binding", "backend_id": "wsl:ubuntu-24.04:v1", "worktree_backend_id": "windows-native:v1", "outcome": "backend_mismatch" }
+    ]
+  },
+  "faults": [
+    "response_reordered",
+    "cancel_completion_race",
+    "query_retry_exhausted",
+    "mutation_outcome_unknown",
+    "partial_response",
+    "corrupt_cache",
+    "schema_version_unknown"
+  ]
+}
