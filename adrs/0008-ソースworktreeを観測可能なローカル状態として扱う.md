@@ -4,7 +4,11 @@ Date: 2026-08-21
 
 ## Status
 
-Proposed
+Accepted
+
+Relates to [4. PR準備とレビューセッションを分離する](0004-PR準備とレビューセッションを分離する.md)
+
+Relates to [6. GitHub差分とローカル差分を別のソースとして扱う](0006-GitHub差分とローカル差分を別のソースとして扱う.md)
 
 ## Context
 

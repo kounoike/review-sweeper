@@ -4,6 +4,7 @@ title: 信頼ベースのworkspace setupを実装する
 status: To Do
 assignee: []
 created_date: '2026-08-23 00:51'
+updated_date: '2026-08-30 20:35'
 labels:
   - preparation
   - mvp
@@ -23,16 +24,16 @@ ordinal: 22
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-リポジトリのセットアップ要件を自動検出し、提案内容を表示したうえで、リポジトリ単位の明示的な信頼がある場合だけ固定済みの実行バックエンドでsetupを実行する。
+リポジトリのセットアップ要件を副作用なく自動検出して提案内容を表示する。setupはrepositoryが信頼済みでも自動実行せず、ユーザーが明示的に「Setupを実行」を選び、初回またはsetup policy fingerprint変更時の承認がある場合だけ、Worktreeに固定された実行バックエンドで実行する。setup未実行・承認待ち・失敗でもGitHub差分によるレビューを継続可能にする。
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 mise.toml、.tool-versions、主要manifest・lockfileからセットアップ候補を副作用なしで検出する
-- [ ] #2 検出したコマンド、実行理由、対象worktree、実行バックエンド、信頼状態を実行前に表示する
-- [ ] #3 信頼されていないリポジトリではコードやsetupコマンドを一切実行しない
-- [ ] #4 信頼済みリポジトリで承認したsetupを固定バックエンドから実行し、ログ、失敗、キャンセル、再試行を扱う
-- [ ] #5 信頼の付与・取り消しと、PR更新・別worktree・別backendでの境界をテストする
+- [ ] #1 mise.toml、.tool-versions、主要manifest・lockfileからセットアップ候補と必要性を副作用なしで自動検出する
+- [ ] #2 検出した正規化コマンド、実行理由、対象worktree、固定実行バックエンド、repository trust、setup policy承認状態を実行前に表示する
+- [ ] #3 信頼されていないリポジトリではコードやsetupコマンドを一切実行せず、repositoryが信頼済みでもユーザーの明示的な「Setupを実行」操作なしにsetupを自動実行しない
+- [ ] #4 初回はrepository trustとsetup policyを承認し、fingerprintが同じ場合は手動実行操作後に追加確認なしで固定バックエンドからsetupを開始し、ログ、失敗、キャンセル、再試行を扱う
+- [ ] #5 正規化コマンド、対象backend、制御file等のpolicy fingerprint変更時はtrustを維持しつつ差分を示して再承認を要求し、信頼の付与・取り消し、PR更新、別worktree・別backend、setup未実行・失敗でもレビューを継続できる境界をテストする
 <!-- AC:END -->
 
 ## Definition of Done
