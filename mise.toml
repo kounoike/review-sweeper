@@ -46,3 +46,27 @@ depends = ["fmt", "lint", "test"]
 [tasks.build]
 description = "Build the application"
 run = "cargo build"
+
+[tasks.windows-build-dev]
+description = "Build the GPUI Windows evidence binary with the x64 MSVC target"
+run = "cargo build --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
+run_windows = "cargo build --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
+
+[tasks.windows-check]
+description = "Run the Windows-native GPUI evidence checks with the x64 MSVC target"
+run = [
+  "cargo fmt --check --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+  "cargo clippy --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml --all-targets -- -D warnings",
+  "cargo test --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+]
+run_windows = [
+  "cargo fmt --check --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+  "cargo clippy --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml --all-targets -- -D warnings",
+  "cargo test --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+]
+
+[tasks.windows-build-release]
+description = "Build the checked GPUI Windows evidence binary for release packaging"
+depends = ["windows-check"]
+run = "cargo build --release --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
+run_windows = "cargo build --release --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
