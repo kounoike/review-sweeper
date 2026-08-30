@@ -48,25 +48,30 @@ description = "Build the application"
 run = "cargo build"
 
 [tasks.windows-build-dev]
-description = "Build the GPUI Windows evidence binary with the x64 MSVC target"
-run = "cargo build --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
-run_windows = "cargo build --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
+description = "Build the Review Sweeper Windows app with the x64 MSVC target"
+run = "cargo build --locked --target x86_64-pc-windows-msvc --package review-sweeper"
+run_windows = "cargo build --locked --target x86_64-pc-windows-msvc --package review-sweeper"
 
 [tasks.windows-check]
-description = "Run the Windows-native GPUI evidence checks with the x64 MSVC target"
+description = "Run the Windows-native workspace checks with the x64 MSVC target"
 run = [
-  "cargo fmt --check --manifest-path spikes/ui-framework-gpui/Cargo.toml",
-  "cargo clippy --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml --all-targets -- -D warnings",
-  "cargo test --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+  "cargo fmt --all --check",
+  "cargo clippy --locked --target x86_64-pc-windows-msvc --workspace --all-targets --all-features -- -D warnings",
+  "cargo test --locked --target x86_64-pc-windows-msvc --workspace --all-features",
 ]
 run_windows = [
-  "cargo fmt --check --manifest-path spikes/ui-framework-gpui/Cargo.toml",
-  "cargo clippy --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml --all-targets -- -D warnings",
-  "cargo test --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml",
+  "cargo fmt --all --check",
+  "cargo clippy --locked --target x86_64-pc-windows-msvc --workspace --all-targets --all-features -- -D warnings",
+  "cargo test --locked --target x86_64-pc-windows-msvc --workspace --all-features",
 ]
 
 [tasks.windows-build-release]
-description = "Build the checked GPUI Windows evidence binary for release packaging"
+description = "Build the checked Review Sweeper Windows app for release packaging"
 depends = ["windows-check"]
-run = "cargo build --release --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
-run_windows = "cargo build --release --locked --target x86_64-pc-windows-msvc --manifest-path spikes/ui-framework-gpui/Cargo.toml"
+run = "cargo build --release --locked --target x86_64-pc-windows-msvc --package review-sweeper"
+run_windows = "cargo build --release --locked --target x86_64-pc-windows-msvc --package review-sweeper"
+
+[tasks.windows-run]
+description = "Run the Review Sweeper Windows app with the x64 MSVC target"
+run = "cargo run --locked --target x86_64-pc-windows-msvc --package review-sweeper"
+run_windows = "cargo run --locked --target x86_64-pc-windows-msvc --package review-sweeper"
