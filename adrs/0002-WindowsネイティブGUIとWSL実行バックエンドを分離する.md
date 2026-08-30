@@ -10,6 +10,8 @@ Relates to [10. WindowsネイティブUIフレームワークにGPUIを採用す
 
 Relates to [11. GitHub認証とsecretをWindowsネイティブ境界で所有する](0011-github-secret-windows.md)
 
+Relates to [12. 非secret構造化状態と大容量cacheにHybrid永続化を採用する](0012-secret-cache-hybrid.md)
+
 ## Context
 
 Review Sweeperの最終的な対応OSはWindows、macOS、Linuxとする。初期ターゲットはWindowsであり、GUIはWindowsネイティブアプリケーションとして提供する。

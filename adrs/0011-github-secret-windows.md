@@ -8,6 +8,8 @@ Accepted
 
 Relates to [2. WindowsネイティブGUIとWSL実行バックエンドを分離する](0002-WindowsネイティブGUIとWSL実行バックエンドを分離する.md)
 
+Relates to [12. 非secret構造化状態と大容量cacheにHybrid永続化を採用する](0012-secret-cache-hybrid.md)
+
 ## Context
 
 Review SweeperはWindowsネイティブGUIからGitHub APIを利用し、必要に応じてagent、terminal、git、worktree、workspace setupをWindows nativeまたは選択したWSL distroで実行する。GitHub認証情報をWSLや各実行プロセスへ配布すると、secretの複製、失効漏れ、ログやプロセス引数への露出、実行backendごとの不整合が生じる。
